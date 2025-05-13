@@ -12,7 +12,7 @@
 - Faça o download do [NodeJS](https://nodejs.org/pt) e instale em sua máquina
 - Caso esteja no Windows 10, clique com o botão direito segurando shift dentro da pasta raíz (Atividade 1) e clique em "Abrir janela do powershell aqui".
 - Caso contrário, abra o prompt de comando e navegue para o endereço da pasta raíz do projeto.
-- Primeiro, iremos instalar as dependências e executar os servidores\
+- Primeiro, iremos instalar as dependências e executar os servidores\\
 Vamos começar com o servidor REST. Digite os seguintes comandos:
 ```
 cd rest
@@ -52,7 +52,7 @@ Com os 3 servidores ligados, agora acesse o link informado no prompt do [fronten
 - Faça o download do [NodeJS](https://nodejs.org/pt) e instale em sua máquina
 - Caso esteja no Windows 10, clique com o botão direito segurando shift dentro da pasta raíz (Atividade 2) e clique em "Abrir janela do powershell aqui".
 - Caso contrário, abra o prompt de comando e navegue para o endereço da pasta raíz do projeto.
-- Primeiro, iremos instalar as dependências e executar os servidores\
+- Primeiro, iremos instalar as dependências e executar os servidores\\
 Aqui, instalaremos apenas o Express do NodeJS. Digite os seguintes comandos:
 ```
 cd backend
