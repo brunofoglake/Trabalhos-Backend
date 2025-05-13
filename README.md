@@ -4,9 +4,9 @@
 - Em caso de dúvida, escolhi instalar cada dependência localmente (nas pastas de cada função do projeto separadamente) para tornar o projeto mais organizado, indicando qual função utiliza qual framework ou aplicação.
 
 ### Navegação:
-- [Atividade 1](##atividade-1)
-- [Atividade 2](##atividade-2)
-- [Atividade 3](##atividade-3)
+- [Atividade 1](#atividade-1)
+- [Atividade 2](#atividade-2)
+- [Atividade 3](#atividade-3)
 
 ## Atividade 1
 - Faça o download do [NodeJS](https://nodejs.org/pt) e instale em sua máquina
