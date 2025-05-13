@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catálogo de Roupas</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 1000px; margin: 0 auto; padding: 20px; }
+    .container { display: flex; gap: 20px; }
+    .api-section { flex: 1; border: 1px solid #ddd; padding: 15px; border-radius: 5px; }
+    .produto { border: 1px solid #eee; padding: 10px; margin-bottom: 10px; border-radius: 3px; }
+    button { background-color: #ff4444; color: white; border: none; padding: 5px 10px; cursor: pointer; }
+    input, select { margin-bottom: 10px; padding: 8px; width: 95%; }
+  </style>
+</head>
+<body>
+  <h1>Catálogo de Roupas</h1>
+  <div class="container">
+    <!-- Seção REST -->
+    <div class="api-section">
+      <h2>API REST</h2>
+      <form id="form-rest">
+        <input type="text" id="rest-nome" placeholder="Nome" required>
+        <input type="text" id="rest-descricao" placeholder="Descrição" required>
+        <input type="text" id="rest-tamanho" placeholder="Tamanho" required>
+        <input type="number" id="rest-preco" placeholder="Preço" step="0.01" required>
+        <input type="text" id="rest-categoria" placeholder="Categoria" required>
+        <button type="submit">Adicionar (REST)</button>
+      </form>
+      <div id="lista-rest"></div>
+    </div>
+    
+    <!-- Seção GraphQL -->
+    <div class="api-section">
+      <h2>API GraphQL</h2>
+      <form id="form-graphql">
+        <input type="text" id="graphql-nome" placeholder="Nome" required>
+        <input type="text" id="graphql-descricao" placeholder="Descrição" required>
+        <input type="text" id="graphql-tamanho" placeholder="Tamanho" required>
+        <input type="number" id="graphql-preco" placeholder="Preço" step="0.01" required>
+        <input type="text" id="graphql-categoria" placeholder="Categoria" required>
+        <button type="submit">Adicionar (GraphQL)</button>
+      </form>
+      <div id="lista-graphql"></div>
+    </div>
+  </div>
+
+  <script>
+    // Funções REST
+    async function carregarProdutosREST() {
+      try {
+        const response = await fetch('http://localhost:4000/produtos');
+        const produtos = await response.json();
+        document.getElementById('lista-rest').innerHTML = produtos.map(p => `
+          <div class="produto">
+            <h3>${p.nome}</h3>
+            <p>${p.descricao}</p>
+            <p>Tamanho: ${p.tamanho} | Preço: R$ ${p.preco.toFixed(2)}</p>
+            <p>Categoria: ${p.categoria}</p>
+            <button onclick="removerProdutoREST(${p.id})">Remover</button>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('Erro REST:', error);
+      }
+    }
+
+    async function adicionarProdutoREST(e) {
+      e.preventDefault();
+      try {
+        await fetch('http://localhost:4000/produtos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            nome: document.getElementById('rest-nome').value,
+            descricao: document.getElementById('rest-descricao').value,
+            tamanho: document.getElementById('rest-tamanho').value,
+            preco: parseFloat(document.getElementById('rest-preco').value),
+            categoria: document.getElementById('rest-categoria').value
+          })
+        });
+        document.getElementById('form-rest').reset();
+        carregarProdutosREST();
+      } catch (error) {
+        console.error('Erro REST:', error);
+      }
+    }
+
+    async function removerProdutoREST(id) {
+      try {
+        await fetch(`http://localhost:4000/produtos/${id}`, { method: 'DELETE' });
+        carregarProdutosREST();
+      } catch (error) {
+        console.error('Erro REST:', error);
+      }
+    }
+
+    // Funções GraphQL
+    async function executarQuery(query, variables) {
+      try {
+        const response = await fetch('http://localhost:4001/graphql', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query, variables })
+        });
+        return await response.json();
+      } catch (error) {
+        console.error('Erro GraphQL:', error);
+      }
+    }
+
+    async function carregarProdutosGraphQL() {
+      const { data } = await executarQuery(`
+        query {
+          getProdutos {
+            id
+            nome
+            descricao
+            tamanho
+            preco
+            categoria
+          }
+        }
+      `);
+      if (data) {
+        document.getElementById('lista-graphql').innerHTML = data.getProdutos.map(p => `
+          <div class="produto">
+            <h3>${p.nome}</h3>
+            <p>${p.descricao}</p>
+            <p>Tamanho: ${p.tamanho} | Preço: R$ ${p.preco.toFixed(2)}</p>
+            <p>Categoria: ${p.categoria}</p>
+            <button onclick="removerProdutoGraphQL(${p.id})">Remover</button>
+          </div>
+        `).join('');
+      }
+    }
+
+    async function adicionarProdutoGraphQL(e) {
+      e.preventDefault();
+      await executarQuery(`
+        mutation ($input: ProdutoInput!) {
+          createProduto(input: $input) {
+            id
+          }
+        }
+      `, {
+        input: {
+          nome: document.getElementById('graphql-nome').value,
+          descricao: document.getElementById('graphql-descricao').value,
+          tamanho: document.getElementById('graphql-tamanho').value,
+          preco: parseFloat(document.getElementById('graphql-preco').value),
+          categoria: document.getElementById('graphql-categoria').value
+        }
+      });
+      document.getElementById('form-graphql').reset();
+      carregarProdutosGraphQL();
+    }
+
+    async function removerProdutoGraphQL(id) {
+      await executarQuery(`
+        mutation ($id: Int!) {
+          deleteProduto(id: $id) {
+            id
+          }
+        }
+      `, { id });
+      carregarProdutosGraphQL();
+    }
+
+    // Inicialização
+    document.addEventListener('DOMContentLoaded', () => {
+      carregarProdutosREST();
+      carregarProdutosGraphQL();
+      document.getElementById('form-rest').addEventListener('submit', adicionarProdutoREST);
+      document.getElementById('form-graphql').addEventListener('submit', adicionarProdutoGraphQL);
+    });
+  </script>
+</body>
+</html>

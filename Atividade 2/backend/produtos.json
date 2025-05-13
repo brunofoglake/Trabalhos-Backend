@@ -1,0 +1,12 @@
+{
+  "produtos": [
+    {
+      "id": 1,
+      "nome": "Calça",
+      "descricao": "Calça jeans",
+      "tamanho": "M",
+      "preco": 15,
+      "categoria": "Geral"
+    }
+  ]
+}
