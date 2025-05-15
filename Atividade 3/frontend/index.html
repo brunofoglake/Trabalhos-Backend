@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catálogo de Roupas</title>
+  <link rel="icon" href="data:,"> <!-- Remove erro do favicon -->
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f9f9f9;
+    }
+    .container {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    #formProduto {
+      margin-bottom: 20px;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    button.delete {
+      background: #f44336;
+    }
+    .produto {
+      border: 1px solid #ddd;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 5px;
+    }
+    .erro {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Catálogo de Roupas</h1>
+    
+    <!-- Formulário -->
+    <form id="formProduto">
+      <input type="text" id="nome" placeholder="Nome" required>
+      <textarea id="descricao" placeholder="Descrição"></textarea>
+      <input type="text" id="tamanho" placeholder="Tamanho (ex: M, 42)">
+      <input type="number" id="preco" placeholder="Preço (ex: 29.90)" step="0.01" required>
+      <input type="text" id="categoria" placeholder="Categoria (ex: Camisetas)">
+      <button type="submit">Salvar Produto</button>
+    </form>
+
+    <!-- Lista de Produtos -->
+    <div id="listaProdutos"></div>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const form = document.getElementById('formProduto');
+      const listaProdutos = document.getElementById('listaProdutos');
+
+      // Renderiza um produto
+      const renderizarProduto = (produto) => {
+        const preco = typeof produto.preco === 'string' 
+          ? parseFloat(produto.preco) 
+          : produto.preco;
+
+        return `
+          <div class="produto" data-id="${produto.id}">
+            <h3>${produto.nome}</h3>
+            <p>${produto.descricao || 'Sem descrição'}</p>
+            <p>Tamanho: ${produto.tamanho} | Preço: R$ ${preco.toFixed(2)}</p>
+            <button onclick="editarProduto(${produto.id})">Editar</button>
+            <button class="delete" onclick="excluirProduto(${produto.id})">Excluir</button>
+          </div>
+        `;
+      };
+
+      // Carrega produtos do backend
+      const carregarProdutos = async () => {
+        try {
+          const response = await fetch('http://localhost:4000/produtos');
+          if (!response.ok) throw new Error(`Erro: ${response.status}`);
+          
+          const produtos = await response.json();
+          listaProdutos.innerHTML = produtos.map(renderizarProduto).join('');
+        } catch (error) {
+          console.error('Erro:', error);
+          listaProdutos.innerHTML = `<p class="erro">Erro ao carregar produtos. Detalhes: ${error.message}</p>`;
+        }
+      };
+
+      // Envia formulário
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const produto = {
+          nome: document.getElementById('nome').value,
+          descricao: document.getElementById('descricao').value,
+          tamanho: document.getElementById('tamanho').value,
+          preco: parseFloat(document.getElementById('preco').value),
+          categoria: document.getElementById('categoria').value
+        };
+
+        try {
+          const url = form.dataset.id 
+            ? `http://localhost:4000/produtos/${form.dataset.id}`
+            : 'http://localhost:4000/produtos';
+          const method = form.dataset.id ? 'PUT' : 'POST';
+
+          const response = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(produto)
+          });
+
+          if (!response.ok) throw new Error(`Erro: ${response.status}`);
+          form.reset();
+          delete form.dataset.id;
+          await carregarProdutos();
+        } catch (error) {
+          console.error('Erro:', error);
+          alert('Falha ao salvar. Verifique o console.');
+        }
+      });
+
+      // Funções globais para editar/excluir
+      window.editarProduto = async (id) => {
+        try {
+          const response = await fetch(`http://localhost:4000/produtos/${id}`);
+          const produto = await response.json();
+          
+          document.getElementById('nome').value = produto.nome;
+          document.getElementById('descricao').value = produto.descricao;
+          document.getElementById('tamanho').value = produto.tamanho;
+          document.getElementById('preco').value = produto.preco;
+          document.getElementById('categoria').value = produto.categoria;
+          
+          form.dataset.id = id;
+        } catch (error) {
+          console.error('Erro:', error);
+        }
+      };
+
+      window.excluirProduto = async (id) => {
+        if (!confirm('Tem certeza?')) return;
+        try {
+          await fetch(`http://localhost:4000/produtos/${id}`, { method: 'DELETE' });
+          await carregarProdutos();
+        } catch (error) {
+          console.error('Erro:', error);
+        }
+      };
+
+      // Inicializa
+      await carregarProdutos();
+    });
+  </script>
+</body>
+</html>
