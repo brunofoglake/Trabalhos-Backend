@@ -81,7 +81,7 @@ Com os 3 servidores ligados, agora acesse o link informado no prompt do [fronten
 
 ## Atividade 3
 - Faça o download do [NodeJS](https://nodejs.org/pt) e instale em sua máquina
-- Faça o download do [MySQL](https://dev.mysql.com/downloads/installer/), baixe na primeira opção e instale em sua máquina. Na hora da instalação, prossiga normalmente até chegar na parte de "Accounts and Roles", onde terá de ser definida uma senha para o acesso do seu banco de dados. Coloque qualquer senha e memorize-a ou guarde-a, pois será necessária para o acesso e a integração do banco de dados ao sistema.
+- Faça o download do [MySQL](https://dev.mysql.com/downloads/installer/), baixe na primeira opção e instale em sua máquina. Na hora da instalação, prossiga normalmente até chegar na parte de "Accounts and Roles", onde terá de ser definida uma senha para o acesso do seu banco de dados. Coloque qualquer senha e a memorize ou guarde, pois será necessária para o acesso e a integração do banco de dados ao sistema.
 - Caso esteja no Windows 10, clique com o botão direito segurando shift dentro da pasta raíz (Atividade 3) e clique em "Abrir janela do powershell aqui".
 - Caso contrário, abra o prompt de comando e navegue para o endereço da pasta raíz do projeto.
 - Primeiro, iremos instalar as dependências e executar os servidores
@@ -101,7 +101,22 @@ CREATE TABLE produtos (
   categoria VARCHAR(50)
 );
 ```
-Com esses comandos, será criado a tabela PRODUTOS. Agora, abra um powershell utilizando o método citado no início da seção e digite os seguintes comandos:
+IMPORTANTE: Depois da instalação do MySQL, a senha que você definiu precisará ser configurada para a integração do site com o servidor MySQL. Abra o arquivo database.js na pasta backend com algum editor de texto, altere e salve:
+```
+const mysql = require('mysql2/promise');
+
+const pool = mysql.createPool({
+  host: 'localhost',
+  user: 'root',                 <<< Usuário padrão
+  password: 'SqlPASS@99218181', <<< Substitua pela sua senha do MySQL
+  database: 'loja_roupas',
+  waitForConnections: true,
+  connectionLimit: 10
+});
+
+module.exports = pool;
+```
+Agora, abra um powershell utilizando o método citado no início da seção e digite os seguintes comandos:
 ```
 cd backend
 npm init -y
@@ -126,4 +141,4 @@ Com os 3 servidores ligados, agora acesse o link informado no prompt do [fronten
 ```
 SELECT * FROM loja_roupas.produtos;
 ```
-Com isso, o setup estará pronto e você poderá livremente adicionar, editar e excluir produtos do site completamente integrado com o banco de dados MySQL.
+Com isso, o setup estará pronto e você poderá livremente adicionar, editar e excluir produtos do site completamente integrados com o banco de dados MySQL.
